@@ -1046,6 +1046,18 @@ def is_hybrid(
     return getattr(model, "is_hybrid", False)
 
 
+def _eplb_transfer_view(weight: Tensor) -> Tensor:
+    """Expose E8M0 scale storage to collectives without changing its bytes.
+
+    EPLB copies expert storage; it performs no arithmetic on these views.
+    PyTorch process groups do not accept float8_e8m0fnu, while uint8 is
+    supported by both the NCCL profile path and staged Gloo migration.
+    """
+    if weight.dtype == torch.float8_e8m0fnu:
+        return weight.view(torch.uint8)
+    return weight
+
+
 @runtime_checkable
 class MixtureOfExperts(Protocol):
     """Check if the model is a mixture of experts (MoE) model."""
@@ -1110,7 +1122,9 @@ class MixtureOfExperts(Protocol):
         self.expert_weights = []
         for layer_idx, layer in enumerate(self.moe_layers):
             # Register the expert weights.
-            self.expert_weights.append(list(layer.get_expert_weights()))
+            self.expert_weights.append(
+                [_eplb_transfer_view(weight) for weight in layer.get_expert_weights()]
+            )
             layer.set_eplb_state(
                 moe_layer_idx=layer_idx,
                 expert_load_view=expert_load_view,
