@@ -103,6 +103,7 @@ from vllm.utils.mem_utils import (
 from vllm.utils.torch_utils import set_random_seed, set_torch_threads_for_runtime
 from vllm.utils.vmm_driver import vmm_unavailable_reason
 from vllm.v1.attention.backends.utils import record_kv_cache_layout
+from vllm.v1.core.kv_observer import observe
 from vllm.v1.core.sched.output import GrammarOutput, SchedulerOutput
 from vllm.v1.kv_cache_interface import KVCacheConfig, KVCacheSpec
 from vllm.v1.outputs import (
@@ -897,6 +898,7 @@ class Worker(WorkerBase):
         logger.debug("Updated max_model_len to %d", max_model_len)
 
     @instrument(span_name="Allocate KV cache")
+    @observe("cache_layout")
     def initialize_from_config(self, kv_cache_config: KVCacheConfig) -> None:
         """Allocate GPU KV cache with the specified kv_cache_config."""
         # Update local config with adjusted num blocks after profiling,

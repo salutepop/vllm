@@ -72,6 +72,7 @@ from vllm.v1.core.kv_cache_utils import (
     resolve_kv_cache_block_sizes,
     update_kv_cache_capacity,
 )
+from vllm.v1.core.kv_observer import observe
 from vllm.v1.core.sched.interface import PauseState, SchedulerInterface
 from vllm.v1.core.sched.output import SchedulerOutput
 from vllm.v1.core.single_type_kv_cache_manager import register_all_kvcache_specs
@@ -564,6 +565,7 @@ class EngineCore:
             )
         return metadata
 
+    @observe("request")
     def add_request(self, request: Request, request_wave: int = 0):
         """Add request to the scheduler.
 

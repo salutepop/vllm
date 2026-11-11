@@ -30,6 +30,7 @@ from vllm.v1.core.kv_cache_utils import (
     resolve_block_hashes,
     to_event_extra_keys,
 )
+from vllm.v1.core.kv_observer import observe
 from vllm.v1.request import Request
 
 logger = init_logger(__name__)
@@ -200,6 +201,7 @@ class BlockPool:
             cached_blocks.append(block)
         return cached_blocks
 
+    @observe("cache_store")
     def cache_full_blocks(
         self,
         request: Request,
@@ -678,6 +680,7 @@ class BlockPool:
             # `num_tokens` only applies to the first (primary) insertion.
             self._insert_block_hash(block_hash, dst_block, num_tokens=num_tokens)
 
+    @observe("pool_allocate")
     def get_new_blocks(self, num_blocks: int) -> list[KVCacheBlock]:
         """Get new blocks from the free block pool.
 
@@ -748,6 +751,7 @@ class BlockPool:
                 released.append(block)
         self.free_block_queue.append_n(released)
 
+    @observe("evict")
     def _maybe_evict_cached_block(self, block: KVCacheBlock) -> bool:
         """If a block is cached in `cached_block_hash_to_block`, we reset its hash
         metadata and evict it from the cache.
@@ -771,6 +775,7 @@ class BlockPool:
         self._emit_block_removed_events(evicted_hashes)
         return True
 
+    @observe("touch")
     def touch(self, blocks: Sequence[KVCacheBlock]) -> None:
         """Touch a block increases its reference count by 1, and may remove
         the block from the free queue. This is used when a block is hit by

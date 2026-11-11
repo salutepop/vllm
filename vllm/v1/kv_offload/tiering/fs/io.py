@@ -8,6 +8,8 @@ import os
 import random
 import threading
 
+from vllm.v1.core.kv_observer import observe_io
+
 try:
     from vllm.fs_io_C import (  # pyright: ignore[reportMissingImports]
         batch_load_block as batch_load_block_C,
@@ -171,6 +173,7 @@ def _load_block(
             os.close(fd)
 
 
+@observe_io("ssd_store")
 def batch_store_block(
     paths: list[str],
     view: memoryview,
@@ -195,6 +198,7 @@ def batch_store_block(
             _store_block(path, view, offset, block_size, use_o_direct)
 
 
+@observe_io("ssd_load")
 def batch_load_block(
     paths: list[str],
     view: memoryview,

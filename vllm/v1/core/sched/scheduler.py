@@ -40,6 +40,7 @@ from vllm.v1.core.encoder_cache_manager import (
 from vllm.v1.core.kv_cache_manager import KVCacheBlocks, KVCacheManager
 from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
 from vllm.v1.core.kv_cache_utils import KVCacheBlock
+from vllm.v1.core.kv_observer import observe
 from vllm.v1.core.sched.interface import PauseState, SchedulerInterface
 from vllm.v1.core.sched.output import (
     CachedRequestData,
@@ -2242,6 +2243,7 @@ class Scheduler(SchedulerInterface):
         )
         return GrammarOutput(structured_output_request_ids, bitmask)
 
+    @observe("scheduler_output")
     def update_from_output(
         self,
         scheduler_output: SchedulerOutput,

@@ -15,6 +15,7 @@ from vllm.v1.core.kv_cache_coordinator import (
 )
 from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
 from vllm.v1.core.kv_cache_utils import KVCacheBlock, KVCacheBlockCopy, trim_null_head
+from vllm.v1.core.kv_observer import observe
 from vllm.v1.core.single_type_kv_cache_manager import MambaManager
 from vllm.v1.kv_cache_interface import (
     AttentionSpec,
@@ -129,6 +130,7 @@ class KVCacheBlocks:
 
 
 class KVCacheManager:
+    @observe("manager_init")
     def __init__(
         self,
         kv_cache_config: KVCacheConfig,
@@ -285,6 +287,7 @@ class KVCacheManager:
             preempted=request.num_preemptions > 0,
         )
 
+    @observe("prefix_lookup")
     def get_computed_blocks(
         self, request: Request, max_cache_hit_length: int | None = None
     ) -> tuple[KVCacheBlocks, int, int]:
@@ -398,6 +401,7 @@ class KVCacheManager:
         # Per-group lookups do not detect an uncached shared prefix (boundary 0).
         return blocks, num_local, 0, min(per_group_hits) < num_local
 
+    @observe("allocate")
     def allocate_slots(
         self,
         request: Request,
@@ -647,6 +651,7 @@ class KVCacheManager:
 
         return self.create_kv_cache_blocks(new_blocks)
 
+    @observe("free")
     def free(self, request: Request) -> None:
         """Free the blocks allocated for the request.
         We free the blocks in reverse order so that the tail blocks are evicted
