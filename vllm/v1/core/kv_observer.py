@@ -79,6 +79,20 @@ def _blocks(blocks):
     return blocks.get_block_ids() if hasattr(blocks, "get_block_ids") else None
 
 
+def _multimodal(request):
+    """Record cache identity and placeholder positions, never image tensors."""
+    return [
+        {
+            "modality": feature.modality,
+            "identifier": feature.identifier,
+            "mm_hash": getattr(feature, "mm_hash", None),
+            "offset": feature.mm_position.offset,
+            "length": feature.mm_position.length,
+        }
+        for feature in (getattr(request, "mm_features", None) or [])
+    ]
+
+
 def _layout(config):
     return dataclasses.asdict(config)
 
@@ -101,6 +115,7 @@ def observe(kind):
                         kind,
                         **_request(request),
                         token_ids=list(request.prompt_token_ids or []),
+                        multimodal_features=_multimodal(request),
                     )
                 elif kind == "free":
                     before = _blocks(self.get_blocks(request.request_id))

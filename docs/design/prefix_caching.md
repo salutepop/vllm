@@ -238,3 +238,5 @@ In this example, we assume the block size is 4 (each block can cache 4 tokens), 
 ## Research fork observer
 
 `HS_KV_TRACE_DIR` opts into process-local buffered JSONL events for token inputs, cache layout, prefix lookup, allocation, references, eviction, and request release. These are logical engine events, not attention memory-load counts. Prompt and output token IDs are retained for experiment analysis. Leave the variable unset to preserve undecorated engine methods. The observer is an experimental research-fork facility.
+
+The research observer also records multimodal identifiers, processor hashes, and placeholder token spans. Tensor payloads are excluded. Prefix analysis compares the identifiers and positions used by block hashing, so identical image placeholder token IDs alone do not imply reusable KV.
