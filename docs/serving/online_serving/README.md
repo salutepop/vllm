@@ -286,3 +286,12 @@ Key capabilities:
 The following example shows how to deploy a large model like DeepSeek R1 with Ray Serve LLM: [examples/ray_serving/ray_serve_deepseek.py](../../../examples/ray_serving/ray_serve_deepseek.py).
 
 Learn more about Ray Serve LLM with the official [Ray Serve LLM documentation](https://docs.ray.io/en/latest/serve/llm/index.html).
+
+### DeepSeek enabled thinking
+
+For model IDs beginning with `deepseek-`, the Messages endpoint accepts
+`thinking: {"type": "enabled"}` without `budget_tokens`. This is normalized to
+adaptive thinking, preserving the supplied `output_config.effort` and without
+adding a numeric thinking budget. Other model IDs still require a budget for
+enabled thinking. This compatibility adaptation is local to the harness KV
+experiment fork.

@@ -384,6 +384,22 @@ class AnthropicMessagesRequest(BaseModel):
     def apply_return_mm_kwargs_alias(cls, data: Any) -> Any:
         return resolve_return_mm_kwargs_alias(data)
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_deepseek_enabled_thinking(cls, data: Any) -> Any:
+        """Accept DeepSeek's effort-based enabled thinking without a budget."""
+        if not isinstance(data, dict):
+            return data
+        thinking = data.get("thinking")
+        if (
+            str(data.get("model", "")).startswith("deepseek-")
+            and isinstance(thinking, dict)
+            and thinking.get("type") == "enabled"
+            and "budget_tokens" not in thinking
+        ):
+            return {**data, "thinking": {**thinking, "type": "adaptive"}}
+        return data
+
     @model_validator(mode="after")
     def validate_thinking_budget(self) -> "AnthropicMessagesRequest":
         # P/D prefill legs are sent with max_tokens=1 and never decode; the

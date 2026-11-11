@@ -2038,6 +2038,26 @@ class TestToolDefinitions:
 
 
 class TestThinkingConfig:
+    def test_deepseek_native_enabled_thinking_has_no_numeric_budget(self):
+        request = AnthropicMessagesRequest(
+            model="deepseek-flash",
+            max_tokens=256000,
+            messages=[{"role": "user", "content": "Hello"}],
+            thinking={"type": "enabled"},
+            output_config={"effort": "high"},
+        )
+        result = _convert(request)
+        assert result.reasoning_effort == "high"
+        assert result.thinking_token_budget is None
+        assert result.max_tokens == 256000
+
+    def test_other_models_still_require_enabled_thinking_budget(self):
+        with pytest.raises(ValidationError, match="budget_tokens"):
+            _make_request(
+                [{"role": "user", "content": "Hello"}],
+                thinking={"type": "enabled"},
+            )
+
     def test_absent_thinking_leaves_reasoning_untouched(self):
         """Requests without `thinking` must convert exactly as before."""
         request = _make_request([{"role": "user", "content": "Hello"}])
