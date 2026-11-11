@@ -51,9 +51,15 @@ def emit(kind, **fields):
     with _LOCK:
         _FILE.write(json.dumps(record, default=str, separators=(",", ":")) + "\n")
         # Request boundaries make completed requests visible without shutdown.
-        if kind in {"request", "free", "cache_layout", "observer_error"} or (
-            kind == "output_tokens" and fields.get("finished")
-        ):
+        if kind in {
+            "request",
+            "free",
+            "cache_layout",
+            "observer_error",
+            "cpu_transfer_finished",
+            "ssd_store",
+            "ssd_load",
+        } or (kind == "output_tokens" and fields.get("finished")):
             _FILE.flush()
 
 
