@@ -112,7 +112,14 @@ def observe(kind):
                 elapsed = time.monotonic_ns() - start
                 if kind == "request":
                     return result
-                if kind == "scheduler_output":
+                if kind == "cpu_transfer_finished":
+                    for transfer in result:
+                        emit(
+                            kind,
+                            direction="gpu_to_cpu" if self.gpu_to_cpu else "cpu_to_gpu",
+                            **dataclasses.asdict(transfer),
+                        )
+                elif kind == "scheduler_output":
                     for bundle in result.values():
                         for output in bundle.outputs:
                             if output.new_token_ids or output.finish_reason is not None:

@@ -16,6 +16,7 @@ from vllm.logger import init_logger
 from vllm.platforms import current_platform
 from vllm.triton_utils import HAS_TRITON, triton
 from vllm.utils.torch_utils import PIN_MEMORY
+from vllm.v1.core.kv_observer import observe
 from vllm.v1.kv_offload.base import (
     BlockIDsLoadStoreSpec,
     CanonicalKVCacheRef,
@@ -683,6 +684,7 @@ class SingleDirectionOffloadingHandler:
         # success
         return True
 
+    @observe("cpu_transfer_finished")
     def get_finished(self) -> list[TransferResult]:
         results: list[TransferResult] = []
         while self._transfers:
